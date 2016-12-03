@@ -1,0 +1,28 @@
+- Container Creation
+- Setting the reverse proxy server
+- installing the dependencies
+-  Saving the container metadata in the database
+-  Starting the container
+-  setting the subdomain to the ip address
+
+
+- if the user changes the file and updates, then create a new container and publish the app
+
+- If the user deletes the container:
+        - Decommission the container and delete it
+        - remove the repo from the dir
+        - update the timestamp in the database and insert it into the deleted list
+        - run the sudo a2dissite, and remove the conf file from the /etc/apache2/sites-available
+
+
+- redis:
+        - current_cpu : The value of the current cpu to be used
+        - mem: 512M
+
+- Static Site Hosting:
+      - Create the container
+      - Set the config_file
+      - set the reverse proxy server
+      - set the subdomain
+      - insert into the database
+      - Bingo Done
