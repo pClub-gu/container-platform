@@ -27,7 +27,7 @@ platform_containers = {
 def __SetReverseProxy(CONTAINER_IP, SERVER_NAME, CONTAINER_ID):
     # This function is used to set the reverse proxy server for apache
     # This has to be updateed to nginx
-    conf_template = open("Server_Config_templates/apacheConfig.conf", "r")
+    conf_template = open("Config_files/apacheConfig.conf", "r")
     conf_file = conf_template.read()
     conf_template.close()
     conf_file = conf_file.format(CONTAINER_IP=CONTAINER_IP, SERVER_NAME=SERVER_NAME)
@@ -47,72 +47,17 @@ def __SetReverseProxy(CONTAINER_IP, SERVER_NAME, CONTAINER_ID):
     print 'Reverse Proxy server set'
 
 
-def CreatePlatform(image_type, app_path, SERVER_NAME):
-    '''
-        The sole aim of this function is to create a platfrom specific containers, and run web apps with it.
-
-        Currently this is optimised for python.
-        Should add support for more.
-    '''
-    image_name = platform_containers.get(image_type)
-    if not image_name:
-        return "Error: Need the type of the app you are deploying"
-    # time to create the container
-    PORT=8000 # This has to customised for custom port, stored in redis
-
-    # Procfile parsing
-    procfile = open(app_path+"/Procfile", "r")
-    procfile_data = procfile.read()
-    procfile.close()
-
-    procfile_data = procfile_data.split("\n")
-
-    for i in procfile_data:
-        if i.index("web"):
-            procfile_data = i
-            break
-    command = procfile_data[procfile_data.index(":")+1:]
-
-
-    container = cli.create_container(image=image_type,
-                                     volumes=["/app"],
-                                     ports=[8000],
-                                     environment={"PORT": PORT},
-                                     host_config=cli.create_host_config(binds={
-                                         app_path:{
-                                             "bind": "/app",
-                                              "mode": "rw"
-                                         }
-                                     }),
-                                     command=command
-                                     )
-    # SQL command to store the container metadata and the path. Need to write it
-    # Installing the dependencies
-    # Code goes here
-    # Starting the container
-    cli.start(container["Id"])
-
-    CONTAINER_IP = get_ip(container)
-    __SetReverseProxy(CONTAINER_IP, SERVER_NAME, container["Id"])
-    # Time to deploy the container
-    # Set the godaddy domain
-
-    # that ends here
-    # That pretty much is the function to create the platform specific container
-    return
-
-
 def CreateStaticSite(file_path, SERVER_NAME):
      # This works in with all the files
     # parse and set the nginx config file
 
-    nginx_template = open("Server_Config_templates/nginx-template.conf", "r")
+    nginx_template = open("Config_files/nginx-template.conf", "r")
     nginx_conf = nginx_template.read()
     nginx_template.close()
 
     nginx_conf = nginx_conf.replace("{MY_SERVER_NAME}", SERVER_NAME)
 
-    conf_file = open("default.conf", "w")
+    conf_file = open("Config_files/default.conf", "w")
     conf_file.write(nginx_conf)
     conf_file.close()
 
@@ -127,7 +72,7 @@ def CreateStaticSite(file_path, SERVER_NAME):
                                      )
     # Set domain here
     # SQL here
-    command = "docker cp " + os.getcwd() + "Server_Config_templates/default.conf " + container["Id"]  + ":/etc/nginx/conf.d"
+    command = "docker cp " + os.getcwd() + "/default.conf " + container["Id"]  + ":/etc/nginx/conf.d"
     print "The copy command is : " + command
     os.system(command)
     cli.start(container=container["Id"])
